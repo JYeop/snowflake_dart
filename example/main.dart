@@ -11,4 +11,8 @@ void main() async {
   print(nodeFromId);
   var stepFromId = Snowflake.getStepFromId(id);
   print(stepFromId);
+
+  // If you want to use a custom epoch, you can set:
+  Snowflake.epoch = 1688019071792;
+  print(Snowflake.epoch);
 }

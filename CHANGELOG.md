@@ -1,3 +1,7 @@
+## 1.0.3
+
+- Added custom epoch support
+
 ## 1.0.2
 
 - Updated README

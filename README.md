@@ -2,12 +2,15 @@
 
 ### A Snowflake ID generator for Dart
 
-Simple Generator for Snowflake IDs in Dart.
+Simple Snowflake ID Generator in Dart.
 
 [![Pub](https://img.shields.io/pub/v/snowflake_dart.svg)](https://pub.dev/packages/snowflake_dart)
 
 
 ```dart
+import 'package:snowflake_dart/snowflake_dart.dart';
+
+void main() async {
   var node = await Snowflake.create(1);
   var id = await node.generate();
   print(id);
@@ -18,4 +21,9 @@ Simple Generator for Snowflake IDs in Dart.
   print(nodeFromId);
   var stepFromId = Snowflake.getStepFromId(id);
   print(stepFromId);
+
+  // If you want to use a custom epoch, you can set:
+  Snowflake.epoch = 1688019071792;
+  print(Snowflake.epoch);
+}
 ```
