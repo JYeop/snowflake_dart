@@ -15,6 +15,10 @@ void main() async {
   var id = await node.generate();
   print(id);
 
+  // You can create from DateTime
+  var id2 = await node.generate(time: DateTime(2023, 1, 1));
+  print(id2);
+
   var timeFromId = Snowflake.getTimeFromId(id);
   print(timeFromId);
   var nodeFromId = Snowflake.getNodeFromId(id);
@@ -26,4 +30,5 @@ void main() async {
   Snowflake.epoch = 1688019071792;
   print(Snowflake.epoch);
 }
+
 ```

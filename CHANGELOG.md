@@ -1,3 +1,7 @@
+## 1.1.0
+
+- Added id from datetime
+
 ## 1.0.3
 
 - Added custom epoch support

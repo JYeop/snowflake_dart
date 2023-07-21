@@ -1,6 +1,6 @@
 name: snowflake_dart
 description: A simple snowflake id generator for dart.
-version: 1.0.3
+version: 1.1.0
 repository: https://github.com/JYeop/snowflake_dart
 issue_tracker: https://github.com/JYeop/snowflake_dart/issues
 homepage: https://github.com/JYeop/snowflake_dart

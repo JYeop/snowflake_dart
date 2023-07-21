@@ -17,8 +17,7 @@ class Snowflake {
 
   static Future<Snowflake> create(int node) async {
     if (nodeBits + stepBits > 22) {
-      throw ArgumentError(
-          'You have a total 22 bits to share between Node/Step');
+      throw ArgumentError('You have a total 22 bits to share between Node/Step');
     }
     if (node < 0 || node > nodeMax) {
       throw ArgumentError('Node number must be between 0 and $nodeMax');
@@ -26,8 +25,10 @@ class Snowflake {
     return Snowflake._(node);
   }
 
-  Future<int> generate() async {
-    var now = (DateTime.now().millisecondsSinceEpoch - epoch);
+  Future<int> generate({DateTime? time}) async {
+    var now = time != null
+        ? time.millisecondsSinceEpoch - epoch
+        : DateTime.now().millisecondsSinceEpoch - epoch;
     if (now == _time) {
       _step = (_step + 1) & stepMask;
 
