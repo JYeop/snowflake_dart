@@ -1,66 +1,79 @@
 class Snowflake {
-  // GMT: 2010년 November 4일 Thursday AM 1:42:54.657
-  static int epoch = 1288834974657;
-  static int nodeBits = 10;
-  static int stepBits = 12;
-  static int nodeMax = -1 ^ (-1 << nodeBits);
-  static int nodeMask = nodeMax << stepBits;
-  static int stepMask = -1 ^ (-1 << stepBits);
-  static int timeShift = nodeBits + stepBits;
-  static int nodeShift = stepBits;
+  final int nodeId;
+  final int epoch;
+  final int nodeBits;
+  final int sequenceBits;
+  late final int nodeMax;
+  late final int sequenceMax;
+  late final int nodeShift;
+  late final int timestampShift;
 
-  final int node;
-  int _time = 0;
-  int _step = 0;
+  int sequence = 0;
+  int lastTimestamp = -1;
 
-  Snowflake._(this.node);
-
-  static Future<Snowflake> create(int node) async {
-    if (nodeBits + stepBits > 22) {
-      throw ArgumentError('You have a total 22 bits to share between Node/Step');
+  Snowflake({
+    required this.nodeId,
+    this.epoch = 1288834974657, // 2010-11-04T01:42:54.657Z
+    this.nodeBits = 10,
+    this.sequenceBits = 12,
+  }) {
+    if (nodeBits + sequenceBits != 22) {
+      throw Exception("Sum of nodeBits and stepBits must be 22");
     }
-    if (node < 0 || node > nodeMax) {
-      throw ArgumentError('Node number must be between 0 and $nodeMax');
+
+    nodeMax = -1 ^ (-1 << nodeBits);
+    sequenceMax = -1 ^ (-1 << sequenceBits);
+    nodeShift = sequenceBits;
+    timestampShift = sequenceBits + nodeBits;
+
+    if (nodeId > nodeMax) {
+      throw Exception("Node ID can't be greater than $nodeMax");
     }
-    return Snowflake._(node);
   }
 
-  Future<int> generate({DateTime? time}) async {
-    var now = time != null
-        ? time.millisecondsSinceEpoch - epoch
-        : DateTime.now().millisecondsSinceEpoch - epoch;
-    if (now == _time) {
-      _step = (_step + 1) & stepMask;
+  int get now {
+    return DateTime.now().millisecondsSinceEpoch;
+  }
 
-      if (_step == 0) {
-        while (now <= _time) {
-          now = (DateTime.now().millisecondsSinceEpoch - epoch);
+  int generate({DateTime? time}) {
+    int now = time != null ? time.millisecondsSinceEpoch : this.now;
+
+    if (now < lastTimestamp) {
+      throw Exception("Invalid system clock");
+    }
+
+    if (lastTimestamp == now) {
+      sequence = (sequence + 1) & sequenceMax;
+
+      if (sequence == 0) {
+        while (now <= lastTimestamp) {
+          now = this.now;
         }
       }
     } else {
-      _step = 0;
+      sequence = 0;
     }
 
-    _time = now;
-    return ((_time << timeShift) | (node << nodeShift) | _step);
+    lastTimestamp = now;
+
+    if (now < epoch) {
+      throw Exception(
+          "Time is moving backwards.  Refusing to generate id for ${epoch - now} milliseconds");
+    }
+    // print(sequence);
+
+    return ((now - epoch) << timestampShift) | (nodeId << nodeShift) | sequence;
   }
 
-  static DateTime getTimeFromId(int id) {
-    // Extract time from the snowflake ID
-    int timestamp = (id >> Snowflake.timeShift);
-
-    // Convert it to milliseconds since epoch
-    int millisecondsSinceEpoch = timestamp + Snowflake.epoch;
-
-    // Convert to DateTime and return
-    return DateTime.fromMillisecondsSinceEpoch(millisecondsSinceEpoch);
+  int getTimeFromId(int id) {
+    return (id >> timestampShift) + epoch;
   }
 
-  static int getNodeFromId(int id) {
-    return (id & Snowflake.nodeMask) >> Snowflake.nodeShift;
+  int getNodeFromId(int id) {
+    return (id & ((-1 ^ (-1 << nodeShift)) << sequenceBits)) >> sequenceBits;
   }
 
-  static int getStepFromId(int id) {
-    return id & Snowflake.stepMask;
+  int getSequenceFromId(int id) {
+    return id & (-1 ^ (-1 << sequenceBits));
   }
 }

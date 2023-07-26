@@ -1,3 +1,8 @@
+## 2.0.0
+
+- Added support for nodeBits and sequenceBits
+- Bumped major version
+
 ## 1.1.0
 
 - Added id from datetime

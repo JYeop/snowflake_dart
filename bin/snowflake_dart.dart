@@ -1,22 +1,46 @@
 import 'package:snowflake_dart/snowflake_dart.dart';
 
 void main() async {
-  var node = await Snowflake.create(1);
-  var id = await node.generate();
+  var node = Snowflake(nodeId: 0);
+  print(node.generate());
+  // You can create from DateTime
+  var id = node.generate(time: DateTime.now());
   print(id);
 
-  // You can create from DateTime
-  var id2 = await node.generate(time: DateTime(2023, 1, 1));
-  print(id2);
-
-  var timeFromId = Snowflake.getTimeFromId(id);
+  var timeFromId = node.getTimeFromId(id);
   print(timeFromId);
-  var nodeFromId = Snowflake.getNodeFromId(id);
+  var nodeFromId = node.getNodeFromId(id);
   print(nodeFromId);
-  var stepFromId = Snowflake.getStepFromId(id);
+  var stepFromId = node.getSequenceFromId(id);
   print(stepFromId);
 
   // If you want to use a custom epoch, you can set:
-  Snowflake.epoch = 1688019071792;
-  print(Snowflake.epoch);
+  var node2 = Snowflake(nodeId: 0, epoch: 1688019071792);
+  print(node2.generate());
+
+  //  Also, can set nodeBits, sequenceBits
+  // But sum of nodeBits and sequenceBits must be 22
+  var node3 = Snowflake(nodeId: 0, nodeBits: 16, sequenceBits: 6);
+  print(node3.generate());
+  var node4 = Snowflake(nodeId: 0, nodeBits: 14, sequenceBits: 8);
+  print(node4.generate());
 }
+
+//
+// void main() {
+//   var snowflake = Snowflake(nodeId: 0); // Replace with your values
+//   bool hasErr = false;
+//   for (var i = 0; i < 10000; i++) {
+//     var id = snowflake.generate();
+//     var timestamp = snowflake.getTimeFromId(id);
+//     var nodeId = snowflake.getNodeFromId(id);
+//     var sequence = snowflake.getSequenceFromId(id);
+//
+//     if (!((timestamp - snowflake.epoch) << snowflake.timestampShift | (nodeId << snowflake.nodeShift) | sequence == id)) {
+//       print('Failed at iteration $i');
+//       hasErr = true;
+//       break;
+//     }
+//   }
+//   print('Test completed');
+// }

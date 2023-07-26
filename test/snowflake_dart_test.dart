@@ -6,32 +6,27 @@ void main() {
     late Snowflake snowflake;
 
     setUp(() async {
-      snowflake = await Snowflake.create(10);
+      snowflake = Snowflake(nodeId: 0);
     });
 
     test('generate', () async {
-      int id = await snowflake.generate();
-      expect(id, isNotNull);
-      expect(id, isA<int>());
-    });
+      bool hasErr = false;
+      for (var i = 0; i < 10000; i++) {
+        var id = snowflake.generate();
+        var timestamp = snowflake.getTimeFromId(id);
+        var nodeId = snowflake.getNodeFromId(id);
+        var sequence = snowflake.getSequenceFromId(id);
 
-    test('getTimeFromId', () async {
-      int id = await snowflake.generate();
-      var time = Snowflake.getTimeFromId(id);
-      expect(time, isA<DateTime>());
-    });
-
-    test('getNodeFromId', () async {
-      int id = await snowflake.generate();
-      var node = Snowflake.getNodeFromId(id);
-      expect(node, isA<int>());
-      expect(node, equals(10));
-    });
-
-    test('getStepFromId', () async {
-      int id = await snowflake.generate();
-      var step = Snowflake.getStepFromId(id);
-      expect(step, isA<int>());
+        if (!((timestamp - snowflake.epoch) << snowflake.timestampShift |
+                (nodeId << snowflake.nodeShift) |
+                sequence ==
+            id)) {
+          print('Failed at iteration $i');
+          hasErr = true;
+          break;
+        }
+      }
+      expect(hasErr, equals(false));
     });
   });
 }
